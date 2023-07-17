@@ -969,7 +969,7 @@ def create(data, cli_mode=False):
                             Method: POST
                             ApiId:
                                 Ref: STARKApiGateway
-                Runtime: python3.9
+                Runtime: python3.10
                 Handler: __init__.lambda_handler
                 CodeUri: lambda/STARK_Observability
                 Policies:
