@@ -7,7 +7,6 @@ import datetime
 import time
 import zipfile
 import re
-import GenAI
 
 time_range = 300 #time range in minutes to scan logs
 
@@ -39,17 +38,27 @@ def lambda_handler(event, context):
 
 
 def invoke_GenAI(payload, type):
+    # Define the name of the 'GenAI' Lambda function to be invoked
+    #FIXME: Change this to a library call instead of lambda invoke
+    GenAIFunction = 'STARK-project-DebbieTest2023-06-14-C-GenAIforSTARK-NqxW8BkFxmFL'
+    lambda_client = boto3.client('lambda')
+    GenAI_Payload = payload
+
     # Define the payload to send to the 'GenAI' Lambda function
-    test_payload = { 
-            'GenAIPayload': payload,
+    test_payload = {
+        'body': json.dumps({  # Convert the inner dictionary to a JSON string
+            'GenAIPayload': GenAI_Payload,
             'GenAIType': type,
-        }
+        })
+    }
     
     stark_core.log.msg('GenAI Payload test at invoke_GenAI  %s' %test_payload)
     # Invoke the 'GenAI' Lambda function
-    # FIXME: Caller must have OpenAI layer, and therefore must be x86_64 architecture
-    # FIXME: Stopped at manual tests in Lambda console, python3.9 OpenAILayer doesn't seemt to work for library-fied GenAI 
-    GenAIresponse = GenAI.request(test_payload)
+    GenAIresponse = lambda_client.invoke(
+        FunctionName=GenAIFunction,
+        InvocationType='RequestResponse',  # Synchronous invocation
+        Payload=json.dumps(test_payload)
+    )
     stark_core.log.msg('invoke_GenAI response: %s' %GenAIresponse)
     response = json.loads(GenAIresponse['Payload'].read())
     return response
