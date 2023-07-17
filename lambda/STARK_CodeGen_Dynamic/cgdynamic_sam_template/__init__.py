@@ -969,7 +969,7 @@ def create(data, cli_mode=False):
                             Method: POST
                             ApiId:
                                 Ref: STARKApiGateway
-                Runtime: python3.10
+                Runtime: python3.9
                 Handler: __init__.lambda_handler
                 CodeUri: lambda/STARK_Observability
                 Policies:
@@ -978,7 +978,7 @@ def create(data, cli_mode=False):
                     - AWSLambda_FullAccess
                     - AmazonS3FullAccess
                 Architectures:
-                    - x86_64
+                    - arm64
                 MemorySize: 128
                 Timeout: 60
                 Layers:
@@ -1322,6 +1322,13 @@ def create(data, cli_mode=False):
                 Type: String
                 Description: Place your OpenAI API Key here
                 Value: (Your API Key)
+        STARKGenAIFuncName:
+            Type: AWS::SSM::Parameter
+            Properties: 
+                Name: {project_varname}_GENAI_LAMBDA_FUNC
+                Type: String
+                Description: The STARK GenAI Function for this project
+                Value: !Ref GenAIforSTARK
         """
 
     return textwrap.dedent(cf_template)
