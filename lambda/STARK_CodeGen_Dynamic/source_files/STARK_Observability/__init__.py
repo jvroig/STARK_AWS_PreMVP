@@ -8,8 +8,14 @@ import time
 import zipfile
 import re
 
-time_range = 300 #time range in minutes to scan logs
+ssm = boto3.client('ssm')
+response = ssm.get_parameter(
+    Name='[[STARK_PROJECT_VARNAME]]_GENAI_LAMBDA_FUNC',
+    WithDecryption=False
+)
+GenAI_Function = response.get('Parameter',{}).get('Value','')
 
+time_range = 300 #time range in minutes to scan logs
 
 def lambda_handler(event, context):
       
@@ -38,9 +44,6 @@ def lambda_handler(event, context):
 
 
 def invoke_GenAI(payload, type):
-    # Define the name of the 'GenAI' Lambda function to be invoked
-    #FIXME: Change this to a library call instead of lambda invoke
-    GenAIFunction = 'STARK-project-DebbieTest2023-06-14-C-GenAIforSTARK-NqxW8BkFxmFL'
     lambda_client = boto3.client('lambda')
     GenAI_Payload = payload
 
@@ -55,7 +58,7 @@ def invoke_GenAI(payload, type):
     stark_core.log.msg('GenAI Payload test at invoke_GenAI  %s' %test_payload)
     # Invoke the 'GenAI' Lambda function
     GenAIresponse = lambda_client.invoke(
-        FunctionName=GenAIFunction,
+        FunctionName=GenAI_Function,
         InvocationType='RequestResponse',  # Synchronous invocation
         Payload=json.dumps(test_payload)
     )
