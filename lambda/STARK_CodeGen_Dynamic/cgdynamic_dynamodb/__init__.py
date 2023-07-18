@@ -369,7 +369,7 @@ def create(data):
                 if(stark_core.sec.is_authorized(stark_permissions['edit'], event, ddb)):
                     payload = data
                     payload[pk_field] = data['pk']
-                    invalid_payload = validation.validate_form(payload, metadata)
+                    invalid_payload = stark_core.validation.validate_form(payload, metadata)
                     if len(invalid_payload) > 0:
                         return {{
                             "isBase64Encoded": False,
@@ -401,7 +401,7 @@ def create(data):
                     if(stark_core.sec.is_authorized(stark_permissions['add'], event, ddb)):
                         payload = data
                         payload[pk_field] = data['pk']
-                        invalid_payload = validation.validate_form(payload, metadata)
+                        invalid_payload = stark_core.validation.validate_form(payload, metadata)
                         if len(invalid_payload) > 0:
                             return {{
                                 "isBase64Encoded": False,
