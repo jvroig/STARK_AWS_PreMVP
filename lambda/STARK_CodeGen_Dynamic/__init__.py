@@ -128,6 +128,8 @@ def create_handler(event, context):
             'fileContent': source_code.encode()
         })
 
+        
+
         # test cases
         files_to_commit.append({
             'filePath': f"lambda/test_cases/business_modules/test_{entity_varname.lower()}.py",
@@ -171,11 +173,6 @@ def create_handler(event, context):
     files_to_commit.append({
         'filePath': f"lambda/test_cases/business_modules/__init__.py",
         'fileContent': "#blank init for business modules"
-    })
-
-    files_to_commit.append({
-        'filePath': f"lambda/test_cases/admin_modules/__init__.py",
-        'fileContent': "#blank init for STARK admin modules"
     })
 
     files_to_commit.append({
@@ -236,6 +233,8 @@ def create_handler(event, context):
                     'filePath': f"lambda/" + os.path.join(root[13:], source_file),
                     'fileContent': source_code.encode()
                 })
+
+
 
     ############################################
     #Create build files we need for our pipeline:

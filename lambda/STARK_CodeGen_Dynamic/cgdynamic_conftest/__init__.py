@@ -29,6 +29,15 @@ def create(data):
         entity_varname  = converter.convert_to_system_name(entity)
         source_code += f"""
         from fixtures import {entity_varname} as {entity_varname.lower()}"""
+
+    source_code += f"""    
+        from admin_fixtures import STARK_Module as stark_module
+        from admin_fixtures import STARK_Module_Groups as stark_module_groups
+        from admin_fixtures import STARK_User as stark_user
+        from admin_fixtures import STARK_User_Roles as stark_user_roles
+        from admin_fixtures import STARK_User_Permissions as stark_user_permissions
+        from admin_fixtures import STARK_User_Sessions as stark_user_sessions"""
+    
     source_code += f"""
     
         @pytest.fixture
@@ -124,4 +133,133 @@ def create(data):
         def get_{entity_varname.lower()}_raw_report_payload():
             return {entity_varname.lower()}.get_raw_report_payload()
         """
+
+    source_code +=f"""
+        # ==================================================
+        @pytest.fixture
+        def get_stark_module_data():
+            return stark_module.get_data()
+
+        @pytest.fixture
+        def set_stark_module_payload_sequence():
+            return stark_module.set_payload_sequence()
+
+        @pytest.fixture
+        def set_stark_module_payload():
+            return stark_module.set_payload()
+
+        @pytest.fixture
+        def get_stark_module_raw_payload():
+            return stark_module.get_raw_payload()
+
+        @pytest.fixture
+        def get_stark_module_raw_report_payload():
+            return stark_module.get_raw_report_payload()
+
+        # ==================================================
+        @pytest.fixture
+        def get_stark_module_groups_data():
+            return stark_module_groups.get_data()
+
+        @pytest.fixture
+        def set_stark_module_groups_payload_sequence():
+            return stark_module_groups.set_payload_sequence()
+
+        @pytest.fixture
+        def set_stark_module_groups_payload():
+            return stark_module_groups.set_payload()
+
+        @pytest.fixture
+        def get_stark_module_groups_raw_payload():
+            return stark_module_groups.get_raw_payload()
+
+        @pytest.fixture
+        def get_stark_module_groups_raw_report_payload():
+            return stark_module_groups.get_raw_report_payload()
+
+        # ==================================================
+        @pytest.fixture
+        def get_stark_user_data():
+            return stark_user.get_data()
+
+        @pytest.fixture
+        def set_stark_user_payload_sequence():
+            return stark_user.set_payload_sequence()
+
+        @pytest.fixture
+        def set_stark_user_payload():
+            return stark_user.set_payload()
+
+        @pytest.fixture
+        def get_stark_user_raw_payload():
+            return stark_user.get_raw_payload()
+
+        @pytest.fixture
+        def get_stark_user_raw_report_payload():
+            return stark_user.get_raw_report_payload()
+
+        # ==================================================
+        @pytest.fixture
+        def get_stark_user_roles_data():
+            return stark_user_roles.get_data()
+
+        @pytest.fixture
+        def set_stark_user_roles_payload_sequence():
+            return stark_user_roles.set_payload_sequence()
+
+        @pytest.fixture
+        def set_stark_user_roles_payload():
+            return stark_user_roles.set_payload()
+
+        @pytest.fixture
+        def get_stark_user_roles_raw_payload():
+            return stark_user_roles.get_raw_payload()
+
+        @pytest.fixture
+        def get_stark_user_roles_raw_report_payload():
+            return stark_user_roles.get_raw_report_payload()
+
+        # ==================================================
+        @pytest.fixture
+        def get_stark_user_permissions_data():
+            return stark_user_permissions.get_data()
+
+        @pytest.fixture
+        def set_stark_user_permissions_payload_sequence():
+            return stark_user_permissions.set_payload_sequence()
+
+        @pytest.fixture
+        def set_stark_user_permissions_payload():
+            return stark_user_permissions.set_payload()
+
+        @pytest.fixture
+        def get_stark_user_permissions_raw_payload():
+            return stark_user_permissions.get_raw_payload()
+
+        @pytest.fixture
+        def get_stark_user_permissions_raw_report_payload():
+            return stark_user_permissions.get_raw_report_payload()
+
+        # ==================================================
+        @pytest.fixture
+        def get_stark_user_sessions_data():
+            return stark_user_sessions.get_data()
+
+        @pytest.fixture
+        def set_stark_user_sessions_payload_sequence():
+            return stark_user_sessions.set_payload_sequence()
+
+        @pytest.fixture
+        def set_stark_user_sessions_payload():
+            return stark_user_sessions.set_payload()
+
+        @pytest.fixture
+        def get_stark_user_sessions_raw_payload():
+            return stark_user_sessions.get_raw_payload()
+
+        @pytest.fixture
+        def get_stark_user_sessions_raw_report_payload():
+            return stark_user_sessions.get_raw_report_payload()
+        """
+    
     return textwrap.dedent(source_code)

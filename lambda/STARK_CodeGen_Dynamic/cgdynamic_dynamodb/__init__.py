@@ -104,6 +104,9 @@ def create(data):
 
     #STARK
     import stark_core 
+    from stark_core import utilities
+    from stark_core import validation
+    from stark_core import data_abstraction
 
     ddb    = boto3.client('dynamodb')
     s3_res = boto3.resource('s3')

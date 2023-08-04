@@ -1,0 +1,1 @@
+#blank init for STARK admin modules

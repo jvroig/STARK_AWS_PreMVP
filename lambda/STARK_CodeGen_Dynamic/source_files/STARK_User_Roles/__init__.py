@@ -57,6 +57,8 @@ metadata          = {
         'feedback': ''
     },
 }
+resp_obj = None
+username = ""
 
 ############
 #PERMISSIONS
@@ -276,7 +278,7 @@ def get_all(sk=default_sk, lv_token=None, db_handler = None):
         if next_token != '':
             ddb_arguments['ExclusiveStartKey']=next_token
 
-        response = ddb.query(**ddb_arguments)
+        response = db_handler.query(**ddb_arguments)
         raw = response.get('Items')
         next_token = response.get('LastEvaluatedKey')
 

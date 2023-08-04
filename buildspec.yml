@@ -19,6 +19,7 @@ phases:
       - cp -r lambda/STARK_CodeGen_Dynamic bin/libstark/
       - cp -r lambda/STARK_CodeGen_Static bin/libstark/
       - cp -r lambda/STARK_LayerMaker bin/libstark/
+      - rm -r bin/libstark/STARK_CodeGen_Dynamic/source_files/test_cases/
       - aws s3 sync bin s3://$CODEGEN/STARKUtilities --delete
       - aws s3 cp outputtemplate.yml s3://$BUCKET/STARK_InternalInfra_DeploymentPackages/
       - aws s3 sync lambda/packaged_layers s3://$CODEGEN/STARKLambdaLayers --delete --exclude="*" --include="*.zip"
