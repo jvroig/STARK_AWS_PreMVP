@@ -2,6 +2,10 @@
   "Parameters" : {
     "UserCICDPipelineBucketNameParameter" : "",
     "UserCodeGenBucketNameParameter" : "",
-    "UserWebsiteBucketNameParameter" : ""
+    "UserWebsiteBucketNameParameter" : "",
+    "TerraformArmSubscriptionId": "",
+    "TerraformArmClientId": "",
+    "TerraformArmClientSecret": "",
+    "TerraformArmTenantId": ""
   }
 }

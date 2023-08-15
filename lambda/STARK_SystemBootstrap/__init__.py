@@ -14,7 +14,6 @@ import botocore
 from crhelper import CfnResource
 
 #Private modules
-import bootstrap_buildspec as boot_build
 import bootstrap_sam_template as boot_sam
 import bootstrap_template_conf as boot_conf
 import convert_friendly_to_system as converter
@@ -46,7 +45,13 @@ def create_handler(event, context):
         Key=f'codegen_dynamic/{project_varname}/{project_varname}.yaml'
     )
     cloud_resources = yaml.safe_load(response['Body'].read().decode('utf-8')) 
-
+    cloud_provider = cloud_resources["Cloud Provider"]
+    
+    if cloud_provider == 'AWS':
+        import bootstrap_buildspec as boot_build
+    else:
+        import bootstrap_az_buildspec as boot_build
+        import bootstrap_az_initial_resource as boot_initial_resource
 
     models   = cloud_resources["Data Model"]
     entities = []
@@ -68,6 +73,7 @@ def create_handler(event, context):
         'filePath': "buildspec.yml",
         'fileContent': source_code.encode()
     })
+    
 
     data = { 
         'cloud_resources': cloud_resources,
@@ -83,7 +89,50 @@ def create_handler(event, context):
     files_to_commit.append({
         'filePath': "template_configuration.json",
         'fileContent': source_code.encode()
-    })   
+    })  
+
+    ##FIXME: For clean up, leave here for the meantime while testing 
+    data = {"project_name": project_name}
+
+    if cloud_provider != 'AWS':
+        source_code = f"""\
+        {{
+            "ResourceProperties": {{
+                "Project": "{project_name}",
+                "DDBTable": "willbechangedtomongodb",
+                "CICDBucket": "{cicd_bucket}",
+                "Bucket": "TestBucket",
+                "RepoName": "{repo_name}"
+            }}
+        }}"""
+
+        files_to_commit.append({
+            'filePath': "cgdynamic_payload.json",
+            'fileContent': source_code.encode()
+        }) 
+
+        source_code = f"""\
+        {{
+            "ResourceProperties": {{
+                "Project": "{project_name}",
+                "DDBTable": "willbechangedtomongodb",
+                "CICDBucket": "{cicd_bucket}",
+                "Bucket": "TestBucket",
+                "RepoName": "{repo_name}",
+                "ApiGatewayId": "tobeadded"
+            }}
+        }}"""
+
+        files_to_commit.append({
+            'filePath': "cgstatic_payload.json",
+            'fileContent': source_code.encode()
+        }) 
+
+        source_code = boot_initial_resource.create_store_terraform_files_to_bucket(data)
+        files_to_commit.append({
+            'filePath': "store_terraform_files_to_bucket.py",
+            'fileContent': source_code.encode()
+        }) 
 
     ############################################
     #Commit our static files to the project repo

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-vue.css" />
+    <link rel="stylesheet" href="css/STARK.css" />
+
+    <script src="js/vue.js" defer></script>
+    <script src="js/bootstrap-vue.min.js" defer></script>
+    <script src="js/STARK.js" defer></script>
+    <script src="js/STARK_spinner.js" defer></script>
+    <script src="js/STARK_loading_modal.js" defer></script>
+    <script src="js/STARK_User_Sessions_app.js" defer></script>
+    <script src="js/STARK_User_Sessions_view.js" defer></script>
+    <script src="js/generic_check_auth_view.js" defer></script>
+    <script src="js/generic_root_get.js" defer></script>
+    <script src="js/STARK_nav_bar.js" defer></script>
+
+    <title>[[STARK_PROJECT_NAME]] - User Sessions</title>
+</head>
+<body>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <template v-for="(group, index) in modules" id="nav-groups-template">
+            <h4>
+                <a v-b-toggle class="text-decoration-none" :href="'#nav-group-collapse-'+index" @click.prevent>
+                    <span class="when-open"><img src="images/chevron-up.svg" class="filter-fill-svg-link" height="20rem"></span>
+                    <span class="when-closed"><img src="images/chevron-down.svg" class="filter-fill-svg-link" height="20rem"></span>
+                    <span class="align-bottom">{{ group.group_name }}</span>
+                </a>
+            </h4>
+            <b-collapse :id="'nav-group-collapse-'+index" visible class="mt-0 mb-2 pl-2">
+                <div class="dropdown-container">
+                    <template v-for="module in group.modules" id="nav-modules-template">
+                        <div class="dropdown-btn" :onclick="'window.location.href=\''  + module.href + '\''">
+                            <a href="#"><img class="filter-fill-svg" :src="module.image" alt="Card image cap" height="25rem"> {{module.title}} </a>
+                        </div>
+                    </template>
+                </div>
+            </b-collapse>
+        </template>
+    </div>
+    <div class="container-fluid" id="vue-root">
+
+        <div class="row bg-primary mb-3 p-3 text-white" style="background-image: url('images/banner_generic_blue.png')">
+            <div class="col-12 col-md-10">
+            <h2>
+                <span id="main-burger-menu" style="cursor:pointer;" onclick="openNav()">&#9776;</span>
+                [[STARK_PROJECT_NAME]]
+            </h2>
+            </div>
+            <div class="col-12 col-md-2 text-right">
+                <b-button 
+                    v-b-tooltip.hover title="Settings"
+                    class="mt-3" 
+                    variant="light" 
+                    size="sm">
+                    <img src="images/settings.png" height="20px">
+                </b-button>
+                <b-button 
+                    v-b-tooltip.hover title="Log out"
+                    class="mt-3" 
+                    variant="light" 
+                    size="sm"
+                    onClick="STARK.logout()">
+                    <img src="images/logout.png" height="20px">
+                </b-button>
+            </div>
+        </div>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="home.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="STARK_User_Sessions.html">User Sessions</a></li>
+                <li class="breadcrumb-item active" aria-current="page">View</li>
+            </ol>
+        </nav>
+
+        <div class="container hidden" :style="{visibility: visibility}">
+            <div class="row">
+                <div class="col">
+                    <div class="my-auto">
+                        <form class="border p-3">
+                        <input type="hidden" id="orig_Session_ID" v-model="STARK_User_Sessions.Session_ID">
+                        <div class="form-group row">
+                            <label for="Session_ID" class="col-sm-2 col-form-label">Session ID</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control-plaintext" readonly id="Session_ID" placeholder="" v-model="STARK_User_Sessions.Session_ID">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="Username" class="col-sm-2 col-form-label">Username</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control-plaintext" readonly id="Username" placeholder="" v-model="STARK_User_Sessions.Username">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="Sess_Start" class="col-sm-2 col-form-label">Sess_Start</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control-plaintext" readonly id="Sess_Start" placeholder="" v-model="STARK_User_Sessions.Sess_Start">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="TTL" class="col-sm-2 col-form-label">TTL</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control-plaintext" readonly id="TTL" placeholder="" v-model="STARK_User_Sessions.TTL">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="Permissions" class="col-sm-2 col-form-label">Permissions</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control-plaintext" readonly id="Permissions" placeholder="" v-model="STARK_User_Sessions.Permissions">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onClick="window.location.href='STARK_User_Sessions.html'">Back</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <b-modal id="loading-modal"
+            no-close-on-backdrop
+            no-close-on-esc
+            hide-header
+            hide-footer
+            centered
+            size="sm">
+            <div class="text-center p-3">
+                <div class="spinner-border" style="width: 5rem; height: 5rem" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <div class="mt-3">
+                    Loading...
+                </div>
+            </div>
+        </b-modal>
+    </div>
+</body>
+</html>

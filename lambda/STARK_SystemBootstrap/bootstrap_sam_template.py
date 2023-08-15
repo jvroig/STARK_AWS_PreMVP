@@ -21,6 +21,7 @@ def create(data):
 
     cloud_resources = data['cloud_resources']
     repo_name       = data['repo_name']
+    cloud_provider  = cloud_resources["Cloud Provider"]
 
     #Get environment type - this will allow us to take different branches depending on whether we are LOCAL or PROD (or any other future valid value)
     ENV_TYPE = os.environ['STARK_ENVIRONMENT_TYPE']
@@ -99,9 +100,9 @@ def create(data):
     Transform: AWS::Serverless-2016-10-31
     Description: Bootstrapper
     Parameters:
-        Placeholder:
+        UserCodeGenBucketNameParameter:
             Type: String
-            Description: Placeholder, just so the boostrap template is compatible with our pipeline configuration (expects template configuration).
+            Description: Name for user bucket that will hold static files and deployment packages created by STARK
     Resources:
         STARKSystemBucket:
             Type: AWS::S3::Bucket
@@ -187,5 +188,209 @@ def create(data):
                 ProvisionedThroughput:
                     ReadCapacityUnits: {ddb_rcu_provisioned}
                     WriteCapacityUnits: {ddb_wcu_provisioned}"""
+        
+    if cloud_provider != "AWS":    
+        cf_template +=f"""
+        STARKProjectCodeBuildServiceRole:
+            Type: AWS::IAM::Role
+            Properties:
+                AssumeRolePolicyDocument:
+                    Version: '2012-10-17'
+                    Statement: 
+                        - 
+                            Effect: Allow
+                            Principal:
+                                Service: 
+                                    - 'codebuild.amazonaws.com'
+                            Action: 'sts:AssumeRole'
+                ManagedPolicyArns:
+                    - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+                    - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+                Policies:
+                    - 
+                        PolicyName: PolicyForSTARKProjectCodeBuildServiceRole
+                        PolicyDocument:
+                            Version: "2012-10-17"
+                            Statement:
+                                - 
+                                    Effect: Allow
+                                    Action:
+                                        - 'logs:CreateLogGroup'
+                                        - 'logs:CreateLogStream'  
+                                        - 'logs:PutLogEvents'
+                                        - 's3:PutObject'
+                                        - 's3:GetObject'
+                                        - 's3:GetObjectVersion'
+                                        - 's3:GetBucketAcl'
+                                        - 's3:GetBucketLocation'
+                                        - 'codebuild:CreateReportGroup'
+                                        - 'codebuild:CreateReport'
+                                        - 'codebuild:UpdateReport'
+                                        - 'codebuild:BatchPutTestCases'
+                                    Resource: '*'
+        STARKProjectCodePipelineServiceRole:
+            Type: AWS::IAM::Role
+            Properties:
+                AssumeRolePolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                        - 
+                            Effect: Allow
+                            Principal:
+                                Service: 
+                                    - 'codepipeline.amazonaws.com'
+                            Action: 'sts:AssumeRole'
+                Policies:
+                    - 
+                        PolicyName: PolicyForSTARKProjectCodePipelineServiceRole
+                        PolicyDocument:
+                            Version: '2012-10-17'
+                            Statement:
+                                - 
+                                    Sid: VisualEditor0
+                                    Effect: Allow
+                                    Action:
+                                        - 'opsworks:DescribeStacks'
+                                        - 'rds:*'
+                                        - 'devicefarm:GetRun'
+                                        - 'cloudformation:CreateChangeSet'
+                                        - 'autoscaling:*'
+                                        - 'codebuild:BatchGetBuilds'
+                                        - 'devicefarm:ScheduleRun'
+                                        - 'servicecatalog:ListProvisioningArtifacts'
+                                        - 'devicefarm:ListDevicePools'
+                                        - 'cloudformation:UpdateStack'
+                                        - 'servicecatalog:DescribeProvisioningArtifact'
+                                        - 'cloudformation:DescribeChangeSet'
+                                        - 'cloudformation:ExecuteChangeSet'
+                                        - 'devicefarm:ListProjects'
+                                        - 'sns:*'
+                                        - 'lambda:ListFunctions'
+                                        - 'lambda:InvokeFunction'
+                                        - 'codedeploy:RegisterApplicationRevision'
+                                        - 'opsworks:DescribeDeployments'
+                                        - 'devicefarm:CreateUpload'
+                                        - 'cloudformation:*'
+                                        - 'cloudformation:DescribeStacks'
+                                        - 'codecommit:GetUploadArchiveStatus'
+                                        - 'cloudwatch:*'
+                                        - 'cloudformation:DeleteStack'
+                                        - 'opsworks:DescribeInstances'
+                                        - 'ecs:*'
+                                        - 'ecr:DescribeImages'
+                                        - 'ec2:*'
+                                        - 'codebuild:StartBuild'
+                                        - 'cloudformation:ValidateTemplate'
+                                        - 'opsworks:DescribeApps'
+                                        - 'opsworks:UpdateStack'
+                                        - 'codedeploy:CreateDeployment'
+                                        - 'codedeploy:GetApplicationRevision'
+                                        - 'codedeploy:GetDeploymentConfig'
+                                        - 'sqs:*'
+                                        - 'servicecatalog:CreateProvisioningArtifact'
+                                        - 'cloudformation:DeleteChangeSet'
+                                        - 'codecommit:GetCommit'
+                                        - 'servicecatalog:DeleteProvisioningArtifact'
+                                        - 'codedeploy:GetApplication'
+                                        - 'cloudformation:SetStackPolicy'
+                                        - 'codecommit:UploadArchive'
+                                        - 's3:*'
+                                        - 'elasticloadbalancing:*'
+                                        - 'codecommit:CancelUploadArchive'
+                                        - 'devicefarm:GetUpload'
+                                        - 'elasticbeanstalk:*'
+                                        - 'opsworks:UpdateApp'
+                                        - 'opsworks:CreateDeployment'
+                                        - 'cloudformation:CreateStack'
+                                        - 'ssm:*'
+                                        - 'codecommit:GetBranch'
+                                        - 'servicecatalog:UpdateProduct'
+                                        - 'codedeploy:GetDeployment'
+                                        - 'opsworks:DescribeCommands'
+                                    Resource: '*'
+                                - 
+                                    Sid: VisualEditor1
+                                    Effect: Allow
+                                    Action: 'iam:PassRole'
+                                    Resource: '*'
+                                    Condition:
+                                        StringEqualsIfExists:
+                                            iam:PassedToService:
+                                            - 'cloudformation.amazonaws.com'
+                                            - 'elasticbeanstalk.amazonaws.com'
+                                            - 'ec2.amazonaws.com'
+                                            - 'ecs-tasks.amazonaws.com'
+                                -
+                                    Sid: VisualEditor2
+                                    Effect: Allow
+                                    Action: 'codestar-connections:UseConnection'
+                                    Resource: '*'
+        STARKProjectRepo:
+            Type: AWS::CodeCommit::Repository
+            Properties:
+                RepositoryName: STARK_{project_varname}
+                RepositoryDescription: Default Git repo for the STARK project "{project_name}"
+        STARKProjectBuildProject:
+            Type: AWS::CodeBuild::Project
+            Properties:
+                Name: STARK_{project_varname}_build
+                Artifacts:
+                    Type: CODEPIPELINE  
+                Description: Default Build Project for the STARK project "{project_name}" CI/CD Pipeline
+                Environment:
+                    ComputeType: BUILD_GENERAL1_SMALL
+                    Image: "aws/codebuild/standard:4.0"
+                    Type: LINUX_CONTAINER
+                    EnvironmentVariables:
+                        - Name: CODEGEN_BUCKET_NAME
+                          Value: !Ref UserCodeGenBucketNameParameter
+                ServiceRole: !GetAtt STARKProjectCodeBuildServiceRole.Arn
+                Source:
+                    Type: CODEPIPELINE
+        STARKProjectCICDPipeline:
+            Type: AWS::CodePipeline::Pipeline
+            Properties:
+                Name: STARK_{project_varname}_pipeline
+                ArtifactStore: 
+                    Type: S3
+                    Location: {cicd_bucket_name}
+                RoleArn: !GetAtt STARKProjectCodePipelineServiceRole.Arn
+                Stages:
+                    -
+                        Name: Source
+                        Actions:
+                            -
+                                Name: SourceAction
+                                RunOrder: 1
+                                ActionTypeId:
+                                    Category: Source
+                                    Owner: AWS
+                                    Provider: CodeCommit
+                                    Version: '1'
+                                Configuration:
+                                    RepositoryName: !GetAtt STARKProjectRepo.Name
+                                    PollForSourceChanges: 'true'
+                                    BranchName: master
+                                InputArtifacts: []
+                                OutputArtifacts:
+                                    - Name: SourceArtifact
+                    -
+                        Name: Build
+                        Actions:
+                            -
+                                Name: BuildAction
+                                RunOrder: 2
+                                ActionTypeId:
+                                    Category: Build
+                                    Owner: AWS
+                                    Provider: CodeBuild
+                                    Version: '1'
+                                Configuration:
+                                    ProjectName: !Ref STARKProjectBuildProject
+                                InputArtifacts:
+                                    - Name: SourceArtifact
+                                OutputArtifacts: []
+        
+        """
 
     return textwrap.dedent(cf_template)

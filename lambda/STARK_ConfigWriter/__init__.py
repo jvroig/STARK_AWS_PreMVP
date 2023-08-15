@@ -25,12 +25,15 @@ def make_config_file(event, _):
     cleaner_arn          = os.environ['CLEANER_ARN']
     cf_writer_arn        = os.environ['CF_WRITER_ARN']
     cg_dynamic_arn       = os.environ['CG_DYNAMIC_ARN']
+    cg_dynamicv2_arn     = os.environ['CG_DYNAMICV2_ARN']
     cg_static_arn        = os.environ['CG_STATIC_ARN']
+    cg_staticv2_arn      = os.environ['CG_STATICV2_ARN']
     cf_deploy_role_arn   = os.environ['CF_DEPLOY_ROLE_ARN']
     api_gateway_id       = os.environ['API_GATEWAY_ID']
     cicd_bucket_name     = os.environ['CICD_BUCKET_NAME']
     bootstrapper_arn     = os.environ['SYSTEM_BOOTSTRAP_ARN']
     prelaunch_arn        = os.environ['SYSTEM_PRELAUNCH_ARN']
+    prelaunchv2_arn        = os.environ['SYSTEM_PRELAUNCHV2_ARN']
 
     source_code = f"""\
         API_Gateway_ID: '{api_gateway_id}'
@@ -38,11 +41,14 @@ def make_config_file(event, _):
         CFDeployRole_ARN: '{cf_deploy_role_arn}'
         CFWriter_ARN: '{cf_writer_arn}'
         CGDynamic_ARN: '{cg_dynamic_arn}'
+        CGDynamicV2_ARN: '{cg_dynamicv2_arn}'
         CGStatic_ARN: '{cg_static_arn}'
+        CGStaticV2_ARN: '{cg_staticv2_arn}'
         CICD_Bucket_Name: '{cicd_bucket_name}'
         Cleaner_ARN: '{cleaner_arn}'
         CodeGen_Bucket_Name: '{codegen_bucket_name}'
         Prelaunch_ARN: '{prelaunch_arn}'
+        PrelaunchV2_ARN: '{prelaunchv2_arn}'
         """
 
     source_code = textwrap.dedent(source_code)
