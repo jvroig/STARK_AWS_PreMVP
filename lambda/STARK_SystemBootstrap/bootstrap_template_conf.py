@@ -4,6 +4,7 @@
 #Python Standard Library
 import base64
 import textwrap
+import os
 
 #Private modules
 import convert_friendly_to_system as converter
@@ -13,7 +14,7 @@ def create():
     source_code = f"""\
         {{
             "Parameters" : {{
-                "Placeholder" : "Placeholder"
+                "UserCodeGenBucketNameParameter" : "{os.environ['CODEGEN_BUCKET_NAME']}"
             }}
         }}
         """

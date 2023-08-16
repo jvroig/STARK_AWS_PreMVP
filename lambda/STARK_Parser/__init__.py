@@ -19,7 +19,7 @@ prepend_dir = ""
 if 'libstark' in os.listdir():
     prepend_dir = "libstark.STARK_Parser."
 
-api_gateway_parser = importlib.import_module(f"{prepend_dir}parse_api_gateway")
+api_gateway_parser = importlib.import_module(f"{prepend_dir}parse_api_gatewayv2")
 dynamodb_parser    = importlib.import_module(f"{prepend_dir}parse_dynamodb")
 model_parser       = importlib.import_module(f"{prepend_dir}parse_datamodel")
 lambda_parser      = importlib.import_module(f"{prepend_dir}parse_lambda")
@@ -92,6 +92,7 @@ def lambda_handler(event, context):
     entities = []
     project_name = ""
     project_varname = ""
+    project_name_unique_id = converter.generate_unique_id()
 
     with_cloudfront = False
 
@@ -184,12 +185,14 @@ def lambda_handler(event, context):
 
         cloud_resources = {}
         cloud_resources = {"Project Name": project_name} 
-
+        cloud_provider =  data_model.get('__STARK_advanced__', {}).get('Cloud Provider', 'AWS')
         data = {
             'entities': entities,
             'data_model': data_model,
             'project_name': project_name,
-            'project_varname': project_varname
+            'project_varname': project_varname,
+            'cloud_provider': cloud_provider,
+            'unique_id': project_name_unique_id
         }
         
         response = s3.put_object(
@@ -200,6 +203,10 @@ def lambda_handler(event, context):
                 'STARK_Description': 'Default pass'
             }
         )
+
+
+        # Cloud Provider    
+        cloud_resources["Cloud Provider"] = cloud_provider
 
         # #Default Password
         # cloud_resources["Default Password"] = scrypt.create_hash(data['data_model']['__STARK_default_password__'])

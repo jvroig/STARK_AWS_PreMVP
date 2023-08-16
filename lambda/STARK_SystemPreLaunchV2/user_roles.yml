@@ -1,0 +1,9 @@
+Super Admin:
+    sk: "STARK|role"
+    Description: "Super Admin, all perms"
+Admin:
+    sk: "STARK|role"
+    Description: "All system management perms, no business perms"
+General User:
+    sk: "STARK|role"
+    Description: "Business perms only"

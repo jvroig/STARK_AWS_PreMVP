@@ -11,6 +11,18 @@ Parameters:
     UserWebsiteBucketNameParameter:
         Type: String
         Description: Name for user bucket that will be used as the website bucket for the STARK Parser UI. Not yet used in template, just needed for config.
+    TerraformArmSubscriptionId:
+        Type: String
+        Description: Credentials for Azure deployment through terraform
+    TerraformArmClientId:
+        Type: String
+        Description: Credentials for Azure deployment through terraform
+    TerraformArmClientSecret:
+        Type: String
+        Description: Credentials for Azure deployment through terraform
+    TerraformArmTenantId:
+        Type: String
+        Description: Credentials for Azure deployment through terraform
 Resources:
     STARKCloudFormationDeployServiceRole:
         Type: AWS::IAM::Role
@@ -78,6 +90,22 @@ Resources:
                 S3Key: STARKLambdaLayers/requests_py39.zip
             Description: Requests module for Python 3.x
             LayerName: STARK_Requests
+            CompatibleArchitectures:
+                - x86_64
+                - arm64
+            CompatibleRuntimes:
+                - python3.6
+                - python3.7
+                - python3.8
+                - python3.9
+    PymongoLayer:
+        Type: AWS::Lambda::LayerVersion
+        Properties:
+            Content:
+                S3Bucket: !Ref UserCodeGenBucketNameParameter
+                S3Key: STARKLambdaLayers/pymongo_py39.zip
+            Description: Pymongo module for Python 3.x
+            LayerName: STARK_Pymongo
             CompatibleArchitectures:
                 - x86_64
                 - arm64
@@ -244,10 +272,12 @@ Resources:
             Environment:
                 Variables:
                     STARK_ENVIRONMENT_TYPE: PROD
+                    CODEGEN_BUCKET_NAME: !Ref UserCodeGenBucketNameParameter
             Policies:
                 - AWSLambda_FullAccess
                 - AWSCloudFormationFullAccess
                 - AmazonS3ReadOnlyAccess
+                - AWSCodeBuildAdminAccess
             Layers:
                 - !Ref PyYamlLayer
                 - !Ref STARKFriendlyToSystemNamesLayer
@@ -279,6 +309,30 @@ Resources:
             Timeout: 60
             Architectures:
                 - arm64
+    STARKCodeGenStaticWriterV2:
+        Type: AWS::Serverless::Function
+        Properties:
+            Runtime: python3.9
+            Handler: __init__.lambda_handler
+            CodeUri: lambda/STARK_CodeGen_StaticV2
+            Environment:
+                Variables:
+                    STARK_ENVIRONMENT_TYPE: PROD
+                    CODEGEN_BUCKET_NAME: !Ref UserCodeGenBucketNameParameter
+            Policies:
+                - AmazonS3FullAccess
+                - AWSLambdaBasicExecutionRole
+                - AWSCodeCommitFullAccess
+                - AWSCodePipeline_FullAccess
+                - ReadOnlyAccess
+                - IAMFullAccess
+            Layers:
+                - !Ref PyYamlLayer
+                - !Ref STARKFriendlyToSystemNamesLayer
+                - !Ref STARKGetRelationshipLayer
+            Timeout: 60
+            Architectures:
+                - arm64
     STARKCodeGenDynamicWriter:
         Type: AWS::Serverless::Function
         Properties:
@@ -297,6 +351,34 @@ Resources:
                 - IAMFullAccess
             Layers:
                 - !Ref CFCustomResourceHelperLayer
+                - !Ref PyYamlLayer
+                - !Ref STARKFriendlyToSystemNamesLayer
+                - !Ref STARKGetRelationshipLayer
+                - !Ref STARKSuggestGraphicLayer
+            Timeout: 60
+            Architectures:
+                - arm64
+    STARKCodeGenDynamicWriterV2:
+        Type: AWS::Serverless::Function
+        Properties:
+            Runtime: python3.9
+            Handler: __init__.lambda_handler
+            CodeUri: lambda/STARK_CodeGen_DynamicV2
+            Environment:
+                Variables:
+                    STARK_ENVIRONMENT_TYPE: PROD
+                    CODEGEN_BUCKET_NAME: !Ref UserCodeGenBucketNameParameter
+                    ARM_SUBSCRIPTION_ID: !Ref TerraformArmSubscriptionId
+                    ARM_CLIENT_ID: !Ref TerraformArmClientId
+                    ARM_CLIENT_SECRET: !Ref TerraformArmClientSecret
+                    ARM_TENANT_ID: !Ref TerraformArmTenantId
+            Policies:
+                - AmazonS3FullAccess
+                - AWSLambda_FullAccess 
+                - AWSCodeCommitFullAccess
+                - AWSCodePipeline_FullAccess
+                - IAMFullAccess
+            Layers:
                 - !Ref PyYamlLayer
                 - !Ref STARKFriendlyToSystemNamesLayer
                 - !Ref STARKGetRelationshipLayer
@@ -367,6 +449,31 @@ Resources:
                 - arm64
             MemorySize: 1760
             Timeout: 60
+    STARKSystemPreLaunchV2:
+        Type: AWS::Serverless::Function
+        Properties:
+            Runtime: python3.9
+            Handler: __init__.lambda_handler
+            CodeUri: lambda/STARK_SystemPreLaunchV2
+            Environment:
+                Variables:
+                    STARK_ENVIRONMENT_TYPE: PROD
+                    CODEGEN_BUCKET_NAME: !Ref UserCodeGenBucketNameParameter
+            Policies:
+                - AWSLambdaBasicExecutionRole
+                - AWSCodeCommitFullAccess
+                - AmazonDynamoDBFullAccess
+                - AmazonS3FullAccess
+            Layers:
+                - !Ref PyYamlLayer
+                - !Ref STARKFriendlyToSystemNamesLayer
+                - !Ref STARKSuggestGraphicLayer
+                - !Ref STARKGetRelationshipLayer
+                - !Ref PymongoLayer
+            Architectures:
+                - arm64
+            MemorySize: 1760
+            Timeout: 60
     STARKWebsiteUpdaterFunc:
         Type: AWS::Serverless::Function
         Properties:
@@ -413,10 +520,13 @@ Resources:
                     CLEANER_ARN: !GetAtt STARKBucketCleanerFunc.Arn
                     CF_WRITER_ARN: !GetAtt STARKCFWriterFunc.Arn
                     CG_DYNAMIC_ARN: !GetAtt STARKCodeGenDynamicWriter.Arn
+                    CG_DYNAMICV2_ARN: !GetAtt STARKCodeGenDynamicWriterV2.Arn
                     CG_STATIC_ARN: !GetAtt STARKCodeGenStaticWriter.Arn
+                    CG_STATICV2_ARN: !GetAtt STARKCodeGenStaticWriterV2.Arn
                     CF_DEPLOY_ROLE_ARN: !GetAtt STARKCloudFormationDeployServiceRole.Arn
                     SYSTEM_BOOTSTRAP_ARN: !GetAtt STARKSystemBootstrap.Arn
                     SYSTEM_PRELAUNCH_ARN: !GetAtt STARKSystemPreLaunch.Arn
+                    SYSTEM_PRELAUNCHV2_ARN: !GetAtt STARKSystemPreLaunchV2.Arn
             Policies:
                 - AmazonS3FullAccess
                 - AWSLambdaBasicExecutionRole
