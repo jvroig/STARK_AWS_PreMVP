@@ -1,8 +1,8 @@
 {
   "Parameters" : {
-    "UserCICDPipelineBucketNameParameter" : "",
-    "UserCodeGenBucketNameParameter" : "",
-    "UserWebsiteBucketNameParameter" : "",
+    "UserCICDPipelineBucketNameParameter" : "stark-v1-contributor-pipeline",
+    "UserCodeGenBucketNameParameter" : "stark-v1-contributor-codegenbucket",
+    "UserWebsiteBucketNameParameter" : "waynestark-stark-prototype",
     "TerraformArmSubscriptionId": "",
     "TerraformArmClientId": "",
     "TerraformArmClientSecret": "",
